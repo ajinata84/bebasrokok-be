@@ -1,42 +1,44 @@
 package aileen
 
 import (
+	"bebasrokok-be/controllers/neo"
 	"bebasrokok-be/models"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
-// CheckInRequest represents the expected request body for a check-in
-type CheckInRequest struct {
-	UserID int `json:"UserID"` // Use the JSON tag to match the incoming JSON field name
-}
+var jwtKey = []byte("KUDA")
 
-// CheckIn handles the user check-in
 func CheckIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Parse the request body
-	var req CheckInRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	tokenString := r.Header.Get("Authorization")
+	if tokenString == "" {
+		http.Error(w, "Missing token", http.StatusUnauthorized)
+		return
+	}
+	tokenString = tokenString[len("Bearer "):]
+
+	claims := &neo.Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+	if err != nil || !token.Valid {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
 
-	// Validate the request data
-	if req.UserID == 0 {
-		http.Error(w, "UserID is required", http.StatusBadRequest)
-		return
-	}
+	userID := claims.UserID
 
-	// Insert check-in data into the database
 	db := models.GetDB()
 	query := "INSERT INTO tracker (userid, checkInDate) VALUES (?, ?)"
-	_, err := db.Exec(query, req.UserID, time.Now())
+	_, err = db.Exec(query, userID, time.Now())
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error inserting check-in data: %v", err), http.StatusInternalServerError)
 		return
