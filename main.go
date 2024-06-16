@@ -3,6 +3,7 @@ package main
 import (
 	"bebasrokok-be/controllers/aileen"
 	"bebasrokok-be/controllers/neo"
+	"bebasrokok-be/controllers/ujik"
 	"bebasrokok-be/models"
 	"log"
 	"net/http"
@@ -18,6 +19,8 @@ func main() {
 
 	mux.HandleFunc("/register", neo.Register)
 	mux.HandleFunc("/login", neo.Login)
+	mux.HandleFunc("/getstreak", ujik.GetStreak)
+	mux.HandleFunc("/deletetestimony", ujik.DeleteTestimony)
 
 	protectedMux := http.NewServeMux()
 	protectedMux.HandleFunc("/checkin", aileen.CheckIn)
