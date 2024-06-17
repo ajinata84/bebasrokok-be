@@ -2,6 +2,7 @@ package main
 
 import (
 	"bebasrokok-be/controllers/aileen"
+	"bebasrokok-be/controllers/aji"
 	"bebasrokok-be/controllers/neo"
 	"bebasrokok-be/controllers/ujik"
 	"bebasrokok-be/models"
@@ -25,9 +26,13 @@ func main() {
 	protectedMux := http.NewServeMux()
 	protectedMux.HandleFunc("/checkin", aileen.CheckIn)
 	protectedMux.HandleFunc("/getcheckindates", aileen.GetCheckInDates)
+	protectedMux.HandleFunc("/create-testimony", aji.CreateTestimony)
+	protectedMux.HandleFunc("/edit-testimony", aji.EditTestimony)
 
 	mux.Handle("/checkin", neo.JWTMiddleware(protectedMux))
 	mux.Handle("/getcheckindates", neo.JWTMiddleware(protectedMux))
+	mux.Handle("/create-testimony", neo.JWTMiddleware(protectedMux))
+	mux.Handle("/edit-testimony", neo.JWTMiddleware(protectedMux))
 
 	port := ":8080"
 	log.Printf("Starting server on port %s", port)
