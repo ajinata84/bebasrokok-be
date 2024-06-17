@@ -24,13 +24,15 @@ func main() {
 
 	protectedMux := http.NewServeMux()
 	protectedMux.HandleFunc("/checkin", aileen.CheckIn)
+	protectedMux.HandleFunc("/getcheckindates", aileen.GetCheckInDates)
 
 	mux.Handle("/checkin", neo.JWTMiddleware(protectedMux))
+	mux.Handle("/getcheckindates", neo.JWTMiddleware(protectedMux))
 
 	port := ":8080"
 	log.Printf("Starting server on port %s", port)
 	err = http.ListenAndServe(port, mux)
 	if err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+		log.Fatalf("Server failed to start:%v", err)
 	}
 }
