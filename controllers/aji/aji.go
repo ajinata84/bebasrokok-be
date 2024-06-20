@@ -15,6 +15,7 @@ import (
 )
 
 var jwtKey = []byte("KUDA")
+var preTestimony = "berikan tanggapan dari testimoni untuk berhenti merokok dibawah sepanjang 1 paragraf berisi total 20 - 30 kata \n"
 
 type TestimonyRequest struct {
 	UserID  int    `json:"user_id"`
@@ -59,9 +60,9 @@ func CreateTestimony(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	testimony := "berikan tanggapan dari testimoni untuk berhenti merokok dibawah\n" + req.Content
+	testimony := preTestimony + req.Content
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, option.WithAPIKey(""))
+	client, err := genai.NewClient(ctx, option.WithAPIKey("AIzaSyDCLHX3KqC-zmSv3N2smyc-hfCPIVMlySQ"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -133,9 +134,9 @@ func EditTestimony(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	testimony := "berikan tanggapan dari testimoni untuk berhenti merokok dibawah\n" + req.Content
+	testimony := preTestimony + req.Content
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, option.WithAPIKey(""))
+	client, err := genai.NewClient(ctx, option.WithAPIKey("AIzaSyDCLHX3KqC-zmSv3N2smyc-hfCPIVMlySQ"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -173,6 +174,19 @@ func EditTestimony(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
+}
+
+func GetArticles(w http.ResponseWriter, r *http.Request) {
+	db := models.GetDB()
+
+	testimonies, err := models.GetAllArticles(db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(testimonies)
 }
 
 func TestAI() {

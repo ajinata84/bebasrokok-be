@@ -21,7 +21,7 @@ func main() {
 
 	mux.HandleFunc("/register", neo.Register)
 	mux.HandleFunc("/login", neo.Login)
-	mux.HandleFunc("/getstreak", ujik.GetStreak)
+	// mux.HandleFunc("/getstreak", ujik.GetStreak)
 	mux.HandleFunc("/deletetestimony", ujik.DeleteTestimony)
 
 	protectedMux := http.NewServeMux()

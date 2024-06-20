@@ -36,10 +36,10 @@ func GetDB() *sql.DB {
 // GetUserByID fetches a user by their ID
 func GetUserByID(userID int) (*User, error) {
 	var user User
-	query := "SELECT user_id, username, email, password, streak FROM users WHERE user_id = ?"
+	query := "SELECT user_id, username, email, password FROM users WHERE user_id = ?"
 	row := db.QueryRow(query, userID)
 
-	err := row.Scan(&user.UserID, &user.Username, &user.Email, &user.Password, &user.Streak)
+	err := row.Scan(&user.UserID, &user.Username, &user.Email, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("user not found")

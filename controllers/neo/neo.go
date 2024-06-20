@@ -17,6 +17,7 @@ type Credentials struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	age      int    `json:"age"`
 }
 
 type Claims struct {
@@ -34,7 +35,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db := models.GetDB()
-	err = models.CreateUser(db, creds.Username, creds.Email, creds.Password)
+	err = models.CreateUser(db, creds.Username, creds.Email, creds.Password, creds.age)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

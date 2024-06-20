@@ -95,3 +95,51 @@ func GetAllTestimonies(db *sql.DB) ([]Testimony, error) {
 
 	return testimonies, nil
 }
+
+func GetAllArticles(db *sql.DB) ([]Article, error) {
+	query := "SELECT id, created_at, title, content, thumbnailUrl FROM articles"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var articles []Article
+	for rows.Next() {
+		var article Article
+		if err := rows.Scan(&article.ID, &article.CreatedAt, &article.Title, &article.Content, &article.ThumbnailUrl); err != nil {
+			return nil, err
+		}
+		articles = append(articles, article)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return articles, nil
+}
+
+func GetAllEmbedGraphs(db *sql.DB) ([]EmbedGraph, error) {
+	query := "SELECT id, created_at, embedLink FROM embedGraphs"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var embedGraphs []EmbedGraph
+	for rows.Next() {
+		var embedGraph EmbedGraph
+		if err := rows.Scan(&embedGraph.ID, &embedGraph.CreatedAt, &embedGraph.EmbedLink); err != nil {
+			return nil, err
+		}
+		embedGraphs = append(embedGraphs, embedGraph)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return embedGraphs, nil
+}
