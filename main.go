@@ -23,13 +23,15 @@ func main() {
 	mux.HandleFunc("/login", neo.Login)
 	// mux.HandleFunc("/getstreak", ujik.GetStreak)
 	mux.HandleFunc("/deletetestimony", ujik.DeleteTestimony)
+	mux.HandleFunc("/viewtestimonies", gavin.GetTestimonies)
+	mux.HandleFunc("/viewgraphs", aji.GetGraphs)
+	mux.HandleFunc("/viewarticles", aji.GetArticles)
 
 	protectedMux := http.NewServeMux()
 	protectedMux.HandleFunc("/checkin", aileen.CheckIn)
 	protectedMux.HandleFunc("/getcheckindates", aileen.GetCheckInDates)
 	protectedMux.HandleFunc("/create-testimony", aji.CreateTestimony)
 	protectedMux.HandleFunc("/edit-testimony", aji.EditTestimony)
-	mux.HandleFunc("/viewtestimonies", gavin.GetTestimonies)
 
 	mux.Handle("/checkin", neo.JWTMiddleware(protectedMux))
 	mux.Handle("/getcheckindates", neo.JWTMiddleware(protectedMux))
