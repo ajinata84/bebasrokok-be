@@ -8,10 +8,11 @@ import (
 )
 
 type Article struct {
-	ID        uint      `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
+	ID           uint      `json:"id"`
+	CreatedAt    time.Time `json:"created_at"`
+	Title        string    `json:"title"`
+	Content      string    `json:"content"`
+	ThumbnailUrl string    `json:"thumbnail"`
 }
 
 type EmbedGraph struct {
@@ -39,17 +40,17 @@ type User struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"-"`
-	Streak   int    `json:"streak"`
+	Age      int    `json:"age"`
 }
 
-func CreateUser(db *sql.DB, username, email, password string) error {
+func CreateUser(db *sql.DB, username, email, password string, age int) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	query := "INSERT INTO users (username, email, password, streak) VALUES (?, ?, ?, 0)"
-	_, err = db.Exec(query, username, email, hashedPassword)
+	query := "INSERT INTO users (username, email, password, age) VALUES (?, ?, ?, ?)"
+	_, err = db.Exec(query, username, email, hashedPassword, age)
 	if err != nil {
 		return err
 	}
