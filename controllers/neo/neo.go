@@ -3,6 +3,7 @@ package neo
 import (
 	"bebasrokok-be/models"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -17,7 +18,7 @@ type Credentials struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	age      int    `json:"age"`
+	Age      int    `json:"age"`
 }
 
 type Claims struct {
@@ -35,7 +36,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db := models.GetDB()
-	err = models.CreateUser(db, creds.Username, creds.Email, creds.Password, creds.age)
+	fmt.Print(creds)
+	err = models.CreateUser(db, creds.Username, creds.Email, creds.Password, creds.Age)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -89,6 +91,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte(tokenString))
 }
+
 func JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenString := r.Header.Get("Authorization")

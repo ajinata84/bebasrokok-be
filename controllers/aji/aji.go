@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/generative-ai-go/genai"
@@ -16,7 +15,7 @@ import (
 )
 
 var jwtKey = []byte("KUDA")
-var geminiKey = os.Getenv("GEMINI_API_KEY")
+var geminiKey = models.GetApiKey()
 var preTestimony = "berikan tanggapan dari testimoni untuk berhenti merokok dibawah sepanjang 1 paragraf berisi total 20 - 30 kata \n"
 
 type TestimonyRequest struct {
@@ -195,6 +194,42 @@ func GetGraphs(w http.ResponseWriter, r *http.Request) {
 	db := models.GetDB()
 
 	testimonies, err := models.GetAllEmbedGraphs(db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(testimonies)
+}
+
+func GetUserTestimonies(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	tokenString := r.Header.Get("Authorization")
+	tokenString = tokenString[len("Bearer "):]
+
+	if tokenString == "" {
+		http.Error(w, "Missing token", http.StatusUnauthorized)
+		return
+	}
+	claims := &neo.Claims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+
+	if err != nil || !token.Valid {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	userID := claims.UserID
+
+	db := models.GetDB()
+	testimonies, err := models.GetUserTestimonies(db, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -29,6 +29,16 @@ type Testimony struct {
 	AIFeedback string    `json:"ai_feedback"`
 }
 
+type FetchTestimony struct {
+	ID         uint      `json:"id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UserID     int       `json:"user_id"`
+	Content    string    `json:"content"`
+	AIFeedback string    `json:"ai_feedback"`
+	Username   string    `json:"username"`
+	Age        int       `json:"age"`
+}
+
 type Tracker struct {
 	TrackerID   int       `json:"tracker_id"`
 	UserID      int       `json:"user_id"`
@@ -72,18 +82,51 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 	return user, nil
 }
 
-func GetAllTestimonies(db *sql.DB) ([]Testimony, error) {
-	query := "SELECT id, created_at, userid, content, aiFeedback FROM testimony"
+func GetAllTestimonies(db *sql.DB) ([]FetchTestimony, error) {
+	query := `
+	SELECT t.id, t.created_at, t.userid, t.content, t.aiFeedback, u.username, u.age 
+	FROM testimony t
+	JOIN users u ON t.userid = u.userid
+	`
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var testimonies []Testimony
+	var testimonies []FetchTestimony
 	for rows.Next() {
-		var testimony Testimony
-		if err := rows.Scan(&testimony.ID, &testimony.CreatedAt, &testimony.UserID, &testimony.Content, &testimony.AIFeedback); err != nil {
+		var testimony FetchTestimony
+		if err := rows.Scan(&testimony.ID, &testimony.CreatedAt, &testimony.UserID, &testimony.Content, &testimony.AIFeedback, &testimony.Username, &testimony.Age); err != nil {
+			return nil, err
+		}
+		testimonies = append(testimonies, testimony)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return testimonies, nil
+}
+
+func GetUserTestimonies(db *sql.DB, userID int) ([]FetchTestimony, error) {
+	query := `
+		SELECT t.id, t.created_at, t.userid, t.content, t.aiFeedback, u.username, u.age 
+		FROM testimony t
+		JOIN users u ON t.userid = u.userid
+		WHERE t.userid = ?
+	`
+	rows, err := db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var testimonies []FetchTestimony
+	for rows.Next() {
+		var testimony FetchTestimony
+		if err := rows.Scan(&testimony.ID, &testimony.CreatedAt, &testimony.UserID, &testimony.Content, &testimony.AIFeedback, &testimony.Username, &testimony.Age); err != nil {
 			return nil, err
 		}
 		testimonies = append(testimonies, testimony)
@@ -142,4 +185,67 @@ func GetAllEmbedGraphs(db *sql.DB) ([]EmbedGraph, error) {
 	}
 
 	return embedGraphs, nil
+}
+
+// GetCheckInDates retrieves the check-in dates for a given user ID
+func GetCheckInDates(db *sql.DB, userID int) ([]time.Time, error) {
+	query := "SELECT checkInDate FROM tracker WHERE userid = ? ORDER BY checkInDate ASC"
+	rows, err := db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var checkInDates []time.Time
+	for rows.Next() {
+		var checkInDate time.Time
+		if err := rows.Scan(&checkInDate); err != nil {
+			return nil, err
+		}
+		checkInDates = append(checkInDates, checkInDate)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return checkInDates, nil
+}
+
+// CalculateStreak calculates the longest streak of consecutive check-in dates
+func CalculateStreak(checkInDates []time.Time) int {
+	if len(checkInDates) == 0 {
+		return 0
+	}
+
+	streak := 1
+	maxStreak := 1
+
+	for i := 1; i < len(checkInDates); i++ {
+		if checkInDates[i-1].Add(24 * time.Hour).Equal(checkInDates[i]) {
+			streak++
+		} else {
+			if streak > maxStreak {
+				maxStreak = streak
+			}
+			streak = 1
+		}
+	}
+
+	if streak > maxStreak {
+		maxStreak = streak
+	}
+
+	return maxStreak
+}
+
+// GetUsernameByID retrieves the username for a given user ID
+func GetUsernameByID(db *sql.DB, userID int) (string, error) {
+	var username string
+	query := "SELECT username FROM users WHERE userid = ?"
+	err := db.QueryRow(query, userID).Scan(&username)
+	if err != nil {
+		return "", err
+	}
+	return username, nil
 }
