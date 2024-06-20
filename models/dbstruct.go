@@ -39,6 +39,17 @@ type FetchTestimony struct {
 	Age        int       `json:"age"`
 }
 
+type FetchAllTestimony struct {
+	ID         uint      `json:"id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UserID     int       `json:"user_id"`
+	Content    string    `json:"content"`
+	AIFeedback string    `json:"ai_feedback"`
+	Username   string    `json:"username"`
+	Age        int       `json:"age"`
+	MaxStreak  int       `json:"max_streak"`
+}
+
 type Tracker struct {
 	TrackerID   int       `json:"tracker_id"`
 	UserID      int       `json:"user_id"`
@@ -80,34 +91,6 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 	}
 
 	return user, nil
-}
-
-func GetAllTestimonies(db *sql.DB) ([]FetchTestimony, error) {
-	query := `
-	SELECT t.id, t.created_at, t.userid, t.content, t.aiFeedback, u.username, u.age 
-	FROM testimony t
-	JOIN users u ON t.userid = u.userid
-	`
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var testimonies []FetchTestimony
-	for rows.Next() {
-		var testimony FetchTestimony
-		if err := rows.Scan(&testimony.ID, &testimony.CreatedAt, &testimony.UserID, &testimony.Content, &testimony.AIFeedback, &testimony.Username, &testimony.Age); err != nil {
-			return nil, err
-		}
-		testimonies = append(testimonies, testimony)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return testimonies, nil
 }
 
 func GetUserTestimonies(db *sql.DB, userID int) ([]FetchTestimony, error) {
@@ -248,4 +231,43 @@ func GetUsernameByID(db *sql.DB, userID int) (string, error) {
 		return "", err
 	}
 	return username, nil
+}
+
+func GetAllTestimonies(db *sql.DB) ([]FetchAllTestimony, error) {
+	query := `
+		SELECT t.id, t.created_at, t.userid, t.content, t.aiFeedback, u.username, u.age 
+		FROM testimony t
+		JOIN users u ON t.userid = u.userid
+	`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var testimonies []FetchAllTestimony
+	for rows.Next() {
+		var testimony FetchAllTestimony
+		if err := rows.Scan(&testimony.ID, &testimony.CreatedAt, &testimony.UserID, &testimony.Content, &testimony.AIFeedback, &testimony.Username, &testimony.Age); err != nil {
+			return nil, err
+		}
+
+		// Get check-in dates for the user
+		checkInDates, err := GetCheckInDates(db, testimony.UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		// Calculate the maximum streak for the user
+		maxStreak := CalculateStreak(checkInDates)
+		testimony.MaxStreak = maxStreak
+
+		testimonies = append(testimonies, testimony)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return testimonies, nil
 }

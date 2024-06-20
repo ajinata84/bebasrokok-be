@@ -4,15 +4,23 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 var db *sql.DB
 
 func Setup() error {
-	dsn := "root:KontolKuda@tcp(172.29.145.89:3306)/rokok?charset=utf8mb4&parseTime=True&loc=Local"
+	enverr := godotenv.Load(".env")
+	if enverr != nil {
+		log.Fatalf("Error loading .env file: %s", enverr)
+	}
 
+	dsn := "root:KontolKuda@tcp(" + os.Getenv("DB_URL") + ")/rokok?charset=utf8mb4&parseTime=True&loc=Local"
+	fmt.Print(dsn)
 	var err error
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {

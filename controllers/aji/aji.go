@@ -143,13 +143,25 @@ func EditTestimony(w http.ResponseWriter, r *http.Request) {
 	}
 	defer client.Close()
 	model := client.GenerativeModel("gemini-1.0-pro")
+	model.SafetySettings = []*genai.SafetySetting{
+		{
+			Category:  genai.HarmCategoryHarassment,
+			Threshold: genai.HarmBlockNone,
+		},
+		{
+			Category:  genai.HarmCategoryHateSpeech,
+			Threshold: genai.HarmBlockNone,
+		},
+	}
+
 	cs := model.StartChat()
 
 	send := func(msg string) *genai.GenerateContentResponse {
+
 		fmt.Printf("== Me: %s\n== Model:\n", msg)
 		res, err := cs.SendMessage(ctx, genai.Text(msg))
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Fatal At send message")
 		}
 		return res
 	}
