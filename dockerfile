@@ -7,7 +7,7 @@ COPY go.mod go.sum ./
 # Download and cache dependencies
 RUN go mod download
 
-COPY *.go ./
+COPY . . 
 
 # Verify module and dependencies
 RUN go mod tidy
