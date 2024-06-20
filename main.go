@@ -3,6 +3,7 @@ package main
 import (
 	"bebasrokok-be/controllers/aileen"
 	"bebasrokok-be/controllers/aji"
+	"bebasrokok-be/controllers/gavin"
 	"bebasrokok-be/controllers/neo"
 	"bebasrokok-be/controllers/ujik"
 	"bebasrokok-be/models"
@@ -28,6 +29,7 @@ func main() {
 	protectedMux.HandleFunc("/getcheckindates", aileen.GetCheckInDates)
 	protectedMux.HandleFunc("/create-testimony", aji.CreateTestimony)
 	protectedMux.HandleFunc("/edit-testimony", aji.EditTestimony)
+	mux.HandleFunc("/viewtestimonies", gavin.GetTestimonies)
 
 	mux.Handle("/checkin", neo.JWTMiddleware(protectedMux))
 	mux.Handle("/getcheckindates", neo.JWTMiddleware(protectedMux))
