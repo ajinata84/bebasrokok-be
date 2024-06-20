@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/generative-ai-go/genai"
@@ -15,6 +16,7 @@ import (
 )
 
 var jwtKey = []byte("KUDA")
+var geminiKey = os.Getenv("GEMINI_API_KEY")
 var preTestimony = "berikan tanggapan dari testimoni untuk berhenti merokok dibawah sepanjang 1 paragraf berisi total 20 - 30 kata \n"
 
 type TestimonyRequest struct {
@@ -62,7 +64,7 @@ func CreateTestimony(w http.ResponseWriter, r *http.Request) {
 
 	testimony := preTestimony + req.Content
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, option.WithAPIKey("AIzaSyDCLHX3KqC-zmSv3N2smyc-hfCPIVMlySQ"))
+	client, err := genai.NewClient(ctx, option.WithAPIKey(geminiKey))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -136,7 +138,7 @@ func EditTestimony(w http.ResponseWriter, r *http.Request) {
 
 	testimony := preTestimony + req.Content
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, option.WithAPIKey("AIzaSyDCLHX3KqC-zmSv3N2smyc-hfCPIVMlySQ"))
+	client, err := genai.NewClient(ctx, option.WithAPIKey(geminiKey))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -180,6 +182,19 @@ func GetArticles(w http.ResponseWriter, r *http.Request) {
 	db := models.GetDB()
 
 	testimonies, err := models.GetAllArticles(db)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(testimonies)
+}
+
+func GetGraphs(w http.ResponseWriter, r *http.Request) {
+	db := models.GetDB()
+
+	testimonies, err := models.GetAllEmbedGraphs(db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
