@@ -6,13 +6,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = os.Getenv("JWT_KEY")
+var jwtKey = []byte("KUDA")
 
 func GetStreak(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

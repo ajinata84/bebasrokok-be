@@ -1,8 +1,6 @@
 package models
 
-import "os"
-
-var apiKey = os.Getenv("GEMINI_API_KEY")
+var apiKey = "AIzaSyDCLHX3KqC-zmSv3N2smyc-hfCPIVMlySQ"
 
 func GetApiKey() string {
 	return apiKey

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtKey = os.Getenv("JWT_KEY")
+var jwtKey = []byte("KUDA")
 
 type Credentials struct {
 	Username string `json:"username"`
