@@ -8,13 +8,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
 )
 
-var jwtKey = []byte("KUDA")
+var jwtKey = os.Getenv("JWT_KEY")
+
 var geminiKey = models.GetApiKey()
 var preTestimony = "berikan tanggapan dari testimoni untuk berhenti merokok dibawah sepanjang 1 paragraf berisi total 20 - 30 kata \n"
 

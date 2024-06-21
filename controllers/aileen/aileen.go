@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte("KUDA")
+var jwtKey = os.Getenv("JWT_KEY")
 
 func CheckIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
