@@ -66,7 +66,7 @@ func DeleteTestimonyByID(testimonyID int) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New("KONTOL")
+		return errors.New("No Rows Affected")
 	}
 
 	return nil
